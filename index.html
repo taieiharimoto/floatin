@@ -111,7 +111,7 @@
       letter-spacing: 0.05em;
       text-transform: none;
       color: rgba(26,26,26,0.55);
-      margin-bottom: 20px;
+      margin-bottom: 16px;
       opacity: 0;
       pointer-events: none;
     }
@@ -235,6 +235,10 @@
   const langToggle = document.getElementById('lang-toggle');
   const flipHint = document.getElementById('flip-hint');
   let hintTimer = null;
+
+  // Set hint text based on input type
+  const isTouch = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+  flipHint.textContent = isTouch ? 'Tap to flip' : 'Click to flip';
 
   // Show hint after 5s if still on front
   hintTimer = setTimeout(() => {
