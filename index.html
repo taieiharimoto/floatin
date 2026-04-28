@@ -43,6 +43,8 @@
       height: var(--size);
       perspective: 900px;
       cursor: pointer;
+      border-radius: 50%;
+      box-shadow: 0 15px 25px rgba(0,0,0,0.28);
       /* Hidden until JS triggers the animation after full load */
       opacity: 0;
     }
@@ -185,7 +187,6 @@
 
 <div id="card-wrapper" style="display:flex; flex-direction:column; align-items:center;">
 <div class="flip-hint" id="flip-hint">Click to flip</div>
-<div style="filter: drop-shadow(0 15px 25px rgba(0,0,0,0.28));">
 <div class="scene" id="scene">
   <div class="card" id="card">
 
@@ -208,7 +209,6 @@
 
   </div>
 </div>
-</div><!-- end shadow wrapper -->
 
 <!-- Language toggle (appears below card when flipped) -->
 <div class="lang-toggle" id="lang-toggle">
