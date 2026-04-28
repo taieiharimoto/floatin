@@ -43,8 +43,6 @@
       height: var(--size);
       perspective: 900px;
       cursor: pointer;
-      border-radius: 50%;
-      box-shadow: 0 15px 25px rgba(0,0,0,0.28);
       /* Hidden until JS triggers the animation after full load */
       opacity: 0;
     }
@@ -92,8 +90,8 @@
       overflow: hidden;
     }
 
-    .front { background: rgb(80,120,122); }
-    .back  { transform: rotateY(-180deg); background: rgb(80,120,122); }
+    .front { background: rgb(80,120,122); box-shadow: 0 15px 25px rgba(0,0,0,0.28); }
+    .back  { transform: rotateY(-180deg); background: rgb(80,120,122); box-shadow: 0 15px 25px rgba(0,0,0,0.28); }
 
     /* ── Flip hint ── */
     @keyframes hint-in {
