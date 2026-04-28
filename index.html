@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Flip Card</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -22,7 +22,7 @@
       align-items: center;
       justify-content: center;
       background: #f5f0e8;
-      font-family: 'DM Sans', sans-serif;
+      font-family: 'Source Sans 3', sans-serif;
       opacity: 0;
     }
 
@@ -130,7 +130,7 @@
     }
 
     .front-eyebrow {
-      font-family: 'DM Sans', sans-serif;
+      font-family: 'Source Sans 3', sans-serif;
       font-weight: 300;
       font-size: 10px;
       letter-spacing: 0.3em;
@@ -241,10 +241,102 @@
       border: 28px solid rgba(26,26,26,0.04);
       pointer-events: none;
     }
+
+
+    /* ── Flip hint ── */
+    @keyframes hint-in {
+      from { opacity: 0; transform: translateY(-8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes hint-out {
+      from { opacity: 1; }
+      to   { opacity: 0; }
+    }
+
+    .flip-hint {
+      font-family: 'Source Sans 3', sans-serif;
+      font-size: 12px;
+      letter-spacing: 0.05em;
+      text-transform: none;
+      color: rgba(26,26,26,0.55);
+      margin-bottom: 20px;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .flip-hint.visible {
+      animation: hint-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    .flip-hint.hiding {
+      animation: hint-out 0.4s ease forwards;
+    }
+    /* ── Language toggle ── */
+    .lang-toggle {
+      margin-top: 24px;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      pointer-events: none;
+      display: flex;
+      gap: 0;
+      align-items: center;
+      font-family: 'Source Sans 3', sans-serif;
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      color: rgba(26,26,26,0.4);
+      user-select: none;
+    }
+
+    .lang-toggle.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .lang-toggle button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: inherit;
+      letter-spacing: inherit;
+      padding: 4px 10px;
+      color: rgba(26,26,26,0.35);
+      transition: color 0.25s ease;
+      text-transform: uppercase;
+    }
+
+    .lang-toggle button.active {
+      color: rgba(26,26,26,0.85);
+      font-weight: 500;
+    }
+
+    .lang-toggle .divider {
+      color: rgba(26,26,26,0.2);
+    }
+
+    /* Back face language layers */
+    .back-lang {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.35s ease;
+    }
+
+    .back-lang.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
   </style>
 </head>
 <body>
 
+<div style="display:flex; flex-direction:column; align-items:center;">
+<div class="flip-hint" id="flip-hint">Click to flip</div>
 <div class="scene" id="scene">
   <div class="card" id="card">
 
@@ -262,15 +354,36 @@
     <!-- BACK -->
     <div class="face back">
       <div class="back-ring"></div>
-      <div class="back-content">
-        <p class="back-label">Revealed</p>
-        <p class="back-quote">"Not all those who wander are lost."</p>
-        <p class="back-attr">— J.R.R. Tolkien</p>
+
+      <!-- English -->
+      <div class="back-lang" id="back-eng">
+        <div class="back-content">
+          <p class="back-label">Revealed</p>
+          <p class="back-quote">"Not all those who wander are lost."</p>
+          <p class="back-attr">— J.R.R. Tolkien</p>
+        </div>
+      </div>
+
+      <!-- Japanese -->
+      <div class="back-lang hidden" id="back-jp">
+        <div class="back-content">
+          <p class="back-label">明かされた</p>
+          <p class="back-quote">「さまよう者が皆、迷っているわけではない。」</p>
+          <p class="back-attr">— J.R.R. トールキン</p>
+        </div>
       </div>
     </div>
 
   </div>
 </div>
+
+<!-- Language toggle (appears below card when flipped) -->
+<div class="lang-toggle" id="lang-toggle">
+  <button id="btn-eng" class="active" onclick="setLang('eng')">ENG</button>
+  <span class="divider">/</span>
+  <button id="btn-jp" onclick="setLang('jp')">JP</button>
+</div>
+</div><!-- end column wrapper -->
 
 <script>
   const card = document.getElementById('card');
@@ -286,9 +399,37 @@
     }, 600);
   });
 
+  let isFlipped = false;
+  const langToggle = document.getElementById('lang-toggle');
+  const flipHint = document.getElementById('flip-hint');
+  let hintTimer = null;
+
+  // Show hint after 5s if still on front
+  hintTimer = setTimeout(() => {
+    if (!isFlipped) flipHint.classList.add('visible');
+  }, 5000);
+
   scene.addEventListener('click', () => {
-    card.classList.toggle('flipped');
+    isFlipped = !isFlipped;
+    card.classList.toggle('flipped', isFlipped);
+    langToggle.classList.toggle('visible', isFlipped);
+
+    if (isFlipped) {
+      // Fade out hint if it's showing
+      if (flipHint.classList.contains('visible')) {
+        flipHint.classList.remove('visible');
+        void flipHint.offsetWidth; // force reflow so animation restarts cleanly
+        flipHint.classList.add('hiding');
+      }
+    }
   });
+
+  function setLang(lang) {
+    document.getElementById('back-eng').classList.toggle('hidden', lang !== 'eng');
+    document.getElementById('back-jp').classList.toggle('hidden', lang !== 'jp');
+    document.getElementById('btn-eng').classList.toggle('active', lang === 'eng');
+    document.getElementById('btn-jp').classList.toggle('active', lang === 'jp');
+  }
 </script>
 
 </body>
